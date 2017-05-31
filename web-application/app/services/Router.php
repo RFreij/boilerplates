@@ -22,6 +22,9 @@ class Router {
 	
 	function __construct() {
 		
+		//Fallback action is "index"
+		$this->action = "index";
+		
 		//Import statically added routes
 		$static_routes = "web/routes.php";
 		if ( file_exists( $static_routes ) ) {
@@ -40,11 +43,6 @@ class Router {
 						if ( isset( $route['action'] ) && !empty( $route['action'] ) ) {
 							
 							$this->action = $route['action'];
-							
-						}
-						else {
-							
-							$this->action = "index";
 							
 						}
 						

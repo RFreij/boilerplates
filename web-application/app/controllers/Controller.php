@@ -27,8 +27,6 @@ class Controller {
 		
 		$action = $router->getAction();
 		
-		var_dump( $action );
-		
 		if ( empty ( $router->getParameters() ) ) {
 			
 			$this->$action();
