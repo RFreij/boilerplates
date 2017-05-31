@@ -8,7 +8,13 @@
  */
 
 $routes[] = [
-	"path" => "/",
+	"path" => "/web-application/test/{id}",
+	"controller" => "FallbackController",
+	"action" => "index"
+];
+
+$routes[] = [
+	"path" => "/web-application/testing/test/{id}",
 	"controller" => "FallbackController",
 	"action" => "index"
 ];

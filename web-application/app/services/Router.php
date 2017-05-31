@@ -35,6 +35,10 @@ class Router {
 			
 				foreach ( $routes as $route ) {
 					
+					
+					echo preg_match_all( "%{(.*)}%", $route['path'], $matches );
+					print_r($matches);
+					
 					if ( $_SERVER['REQUEST_URI'] == $route['path'] ) {
 						
 						$this->model = 'app\\models\\' . explode( "Controller", $route['controller'] )[0];
