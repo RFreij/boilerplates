@@ -21,11 +21,11 @@ class Database {
 		$envLoader = new EnvLoader();
 		$driver = $envLoader->getVariable("DB_CONNECTION");
 		$host = $envLoader->getVariable( "DB_HOST");
-		$table = $envLoader->getVariable("DB_TABLE");
+		$db_name = $envLoader->getVariable("DB_NAME");
 		$port = $envLoader->getVariable("DB_PORT");
 		$username = $envLoader->getVariable("DB_USERNAME");
 		$password = $envLoader->getVariable("DB_PASSWORD");
-		$dsn = $driver . ":host=" . $host . ";port= " . $port . ";dbname=" . $table;
+		$dsn = $driver . ":host=" . $host . ";port= " . $port . ";dbname=" . $db_name;
 		
 		
 		try {
