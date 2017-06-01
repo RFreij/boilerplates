@@ -36,13 +36,13 @@ $load->set( 'Authenticate', new Authenticate(), true );
 
 $controller = $load->get('Router')->getController();
 $model = $load->get('Router')->getModel();
+$tablename = $load->get('Router')->getTableName();
 
 $services['db'] = $load->get('Database')->db;
 $services['message'] = $load->get('Message');
 $services['auth'] = $load->get('Authenticate');
 
-
-$load->set( 'Model', new $model( $services ), true );
+$load->set( 'Model', new $model( $services, $tablename ), true );
 $load->set( 'Controller', new $controller( $load->get('Router'), $load->get('Model') ), true );
 
 /*

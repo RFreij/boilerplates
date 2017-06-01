@@ -1,0 +1,186 @@
+<?php
+/**
+ *
+ * Created by PhpStorm.
+ * User: Roy Freij - Netcreaties
+ * Date: 1-6-2017
+ * Time: 21:01
+ */
+
+namespace app\services;
+
+use app\services\libraries\MessageType;
+use \PDO;
+use app\services\libraries\ValueType;
+
+class Validator {
+	
+	private $db;
+	private $tablename;
+	private $message;
+	private $validationRules;
+	private $validationErrors;
+	
+	public function __construct( PDO $db, Message $message, $tablename ) {
+		
+		$this->db = $db;
+		$this->tablename = $tablename;
+		$this->message = $message;
+		
+	}
+	
+	public function setValidationRule( $rule ) {
+		
+		$this->validationRules[] = $rule;
+		
+	}
+	
+	public function setValidationError( $error ) {
+		
+		$this->validationErrors[] = $error;
+		
+	}
+	
+	public function validate() {
+	
+		foreach ( $this->validationRules as $rule ) {
+			
+			switch ( $rule['type'] ) {
+				
+				case ValueType::String :
+					
+					$valid = filter_input( INPUT_POST, $rule['name'], FILTER_SANITIZE_STRING );
+				
+				break;
+
+				case ValueType::Boolean :
+					
+					$valid = filter_input( INPUT_POST, $rule['name'], FILTER_VALIDATE_BOOLEAN );
+					
+				break;
+				
+				case ValueType::Email :
+					
+					$valid = filter_input( INPUT_POST, $rule['name'], FILTER_VALIDATE_EMAIL );
+					
+				break;
+				
+				case ValueType::Integer :
+					
+					$valid = filter_input( INPUT_POST, $rule['name'], FILTER_VALIDATE_INT );
+					
+				break;
+				
+				case ValueType::NumberInt :
+					
+					$valid = filter_input( INPUT_POST, $rule['name'], FILTER_SANITIZE_NUMBER_INT );
+					
+				break;
+				
+				case ValueType::Url :
+					
+					$valid = filter_input( INPUT_POST, $rule['name'], FILTER_VALIDATE_URL );
+					
+				break;
+				
+			}
+			
+			if ( !$valid ) {
+				
+				$this->setValidationError([
+					'errorType' => MessageType::Error,
+					'errorContent' => "Er is geen geldige waarde voor: " . $rule['name'] . " gegeven."
+				]);
+				
+			}
+			
+			if ( isset ( $rule['checkIfExists'] ) ) {
+				
+				if ( $this->checkIfExists( $rule, $valid ) ){
+				
+					$this->setValidationError([
+						'errorType' => MessageType::Error,
+						'errorContent' => 'Er is al een waarde met deze ' . $rule['name'] . '.'
+					]);
+				
+				}
+				
+			}
+			
+			if ( isset ( $rule['maxLength'] ) ) {
+				
+				if ( strlen( $valid ) > $rule['maxLength'] ) {
+					
+					$this->setValidationError([
+						'errorType' => MessageType::Error,
+						'errorContent' => $rule['name'] . " Mag maximaal " . $rule['maxLength'] . " aantal tekens bevatten"
+					]);
+					
+				}
+				
+			}
+			
+			if ( isset ( $rule['minLength'] ) ) {
+				
+				if ( strlen( $valid ) < $rule['minLength'] ) {
+					
+					$this->setValidationError([
+						'errorType' => MessageType::Error,
+						'errorContent' => $rule['name'] . " moet minimaal " . $rule['minLength'] . " aantal tekens bevatten"
+					]);
+					
+				}
+				
+			}
+			
+		}
+		
+		if ( count( $this->validationErrors ) > 0 ) {
+	
+			$this->createMessages();
+			return false;
+			
+		}
+		else {
+			
+			return true;
+			
+		}
+		
+	
+	}
+	
+	private function createMessages() {
+		
+		foreach ( $this->validationErrors as $error ) {
+			
+			$this->message->createMessage( $error['errorType'], $error['errorContent'] );
+			
+		}
+		
+	}
+	
+	private function checkIfExists( $rule, $value ) {
+	
+		$sql = "SELECT " . $rule['checkIfExists'] . " FROM " . $this->tablename . " WHERE " . $rule['checkIfExists'] . " = :value";
+		$statement = $this->db->prepare( $sql );
+		
+		$statement->bindValue(":value", $value, PDO::PARAM_STR );
+		
+		$result = $statement->execute();
+		
+		if ( $result ) {
+			
+			if ( $statement->rowCount() > 0 ) {
+				
+				return true;
+				
+			}
+			
+		}
+		
+		return false;
+	
+	}
+	
+}

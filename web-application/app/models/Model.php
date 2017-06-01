@@ -15,18 +15,19 @@ class Model {
 
 	protected $db;
 	public $message;
+	protected $tablename;
 	
-	function __construct( $services ) {
+	function __construct( $services, $tablename ) {
 	
 		$this->db = $services['db'];
 		$this->message = $services['message'];
-		
+		$this->tablename = $tablename;
 		
 	}
 	
-	public function fetchAllData( $table ) {
+	public function fetchAll() {
 		
-		$sql = "SELECT * FROM `" . $table . "`";
+		$sql = "SELECT * FROM `" . $this->tablename . "`";
 		$statement = $this->db->prepare( $sql );
 		
 		$result = $statement->execute();
@@ -39,9 +40,9 @@ class Model {
 	 * param String table: naam tabel ( enkelvoud van Class )
 	 * param Integer id: id dat in controller gevalideerd is met filter_input
 	 */
-	public function fetchDataWithId( $table, $id ) {
+	public function fetchSingle( $id ) {
 		
-		$sql = "SELECT * FROM `" . $table . "` WHERE `id` = :id";
+		$sql = "SELECT * FROM `" . $this->tablename . "` WHERE `id` = :id";
 		$statement = $this->db->prepare( $sql );
 		$statement->bindValue( ":id", $id, PDO::PARAM_INT );
 		
@@ -51,9 +52,9 @@ class Model {
 		
 	}
 	
-	public function deleteData( $table, $id ) {
+	public function delete( $id ) {
 		
-		$sql = "SELECT * FROM `" . $table . "` WHERE `id` = :id";
+		$sql = "SELECT * FROM `" . $this->tablename . "` WHERE `id` = :id";
 		$statement = $this->db->prepare( $sql );
 		
 		$statement->bindValue( ":id", $id, PDO::PARAM_INT );
@@ -64,7 +65,7 @@ class Model {
 		
 		if ( count( $data ) > 0 ) {
 			
-			$sql = "DELETE FROM `" . $table . "` WHERE `id` = :id";
+			$sql = "DELETE FROM `" . $this->tablename . "` WHERE `id` = :id";
 			$statement = $this->db->prepare( $sql );
 			
 			$statement->bindValue( ":id", $id, PDO::PARAM_INT );

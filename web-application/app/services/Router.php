@@ -18,6 +18,7 @@ class Router {
 	private $action;
 	private $item_id;
 	private $model;
+	private $tablename;
 	private $params;
 	
 	function __construct() {
@@ -42,6 +43,7 @@ class Router {
 					if ( $_SERVER['REQUEST_URI'] == $route['path'] ) {
 						
 						$this->model = 'app\\models\\' . explode( "Controller", $route['controller'] )[0];
+						$this->tablename = explode( "Controller", $route['controller'] )[0] . "s";
 						$this->controller = 'app\\controllers\\' . $route['controller'];
 						
 						if ( isset( $route['action'] ) && !empty( $route['action'] ) ) {
@@ -115,6 +117,12 @@ class Router {
 	public function getParameters() {
 		
 		return $this->params;
+		
+	}
+	
+	public function getTableName() {
+		
+		return $this->tablename;
 		
 	}
 	

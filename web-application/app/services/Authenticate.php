@@ -16,7 +16,7 @@ class Authenticate {
 	{
 		if ( !isset($_SESSION['loggedIn']) or !$_SESSION['loggedIn'] )
 		{
-			header( 'Location: ?con=login' );
+			header( 'Location: /login' );
 			die();
 		}
 	}
