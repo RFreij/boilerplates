@@ -3,19 +3,16 @@
  *
  * Created by PhpStorm.
  * User: Roy Freij - Netcreaties
- * Date: 22-5-2017
- * Time: 10:45
+ * Date: 2-6-2017
+ * Time: 23:00
  */
 
 namespace app\controllers;
 
 
-class FallbackController extends Controller {
+class TestController extends Controller {
 	
 	public function index() {
-	
 		echo"hoi";
-	
 	}
-	
 }

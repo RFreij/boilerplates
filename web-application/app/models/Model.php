@@ -9,18 +9,21 @@
 
 namespace app\models;
 
+use app\ServiceLoader;
 use \PDO;
 
 class Model {
 
 	protected $db;
+	protected $auth;
 	public $message;
 	protected $tablename;
 	
-	function __construct( $services, $tablename ) {
+	function __construct( ServiceLoader $loader, $tablename ) {
 	
-		$this->db = $services['db'];
-		$this->message = $services['message'];
+		$this->db = $loader->get('Database');
+		$this->message = $loader->get('Message');
+		$this->auth = $loader->get('Authenticate');
 		$this->tablename = $tablename;
 		
 	}

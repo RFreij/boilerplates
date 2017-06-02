@@ -9,120 +9,93 @@
 
 namespace app\services;
 
+use app\controllers\Controller;
+use app\models\Model;
+use \PDO;
 use app\controllers\DefaultController;
+use app\controllers\FallbackController;
+use app\models\Fallback;
 use app\ServiceLoader;
 
 class Router {
 	
-	private $controller;
-	private $action;
-	private $item_id;
-	private $model;
-	private $tablename;
-	private $params;
+	private $loader;
+	private $path;
+	private $id;
 	
-	function __construct() {
+	public function __construct( ServiceLoader $loader ) {
+	
+		$this->loader = $loader;
+		$uri = preg_match_all( "%^(\D*)\/?(\d+)?$%", $_SERVER['REQUEST_URI'], $matches );
 		
-		//Fallback action is "index"
-		$this->action = "index";
 		
-		//Import statically added routes
-		$static_routes = "web/routes.php";
-		if ( file_exists( $static_routes ) ) {
+		print_r($matches);
+		$this->path = $matches[1][0];
+		$this->id = $matches[2][0];
+		
+	}
+	
+	public function dispatch() {
+		
+		$db = $this->loader->get('Database')->db;
+		
+		$sql = "SELECT * FROM `routes`";
+		$statement = $db->prepare( $sql );
+		
+		$result = $statement->execute();
+		
+		if ( $result ) {
 			
-			include_once ( $static_routes );
+			$routes = $statement->fetchAll( PDO::FETCH_ASSOC );
 			
-			if ( !empty ( $routes ) ) {
-			
+			if ( count( $routes ) > 0 ) {
+				
 				foreach ( $routes as $route ) {
 					
-					
-					echo preg_match_all( "%{(.*)}%", $route['path'], $matches );
-					print_r($matches);
-					
-					if ( $_SERVER['REQUEST_URI'] == $route['path'] ) {
+					if ( $route['path'] == $this->path ) {
 						
-						$this->model = 'app\\models\\' . explode( "Controller", $route['controller'] )[0];
-						$this->tablename = explode( "Controller", $route['controller'] )[0] . "s";
-						$this->controller = 'app\\controllers\\' . $route['controller'];
+						$model = 'app\\models\\'. $route['controller'];
+						$tablename = strtolower( $route['controller'].'s');
+						$controller = 'app\\controllers\\'. $route['controller'].'Controller';
 						
-						if ( isset( $route['action'] ) && !empty( $route['action'] ) ) {
-							
-							$this->action = $route['action'];
-							
+						$action = $route['action'];
+						
+						if ( class_exists( $controller ) ) {
+							if ( class_exists( $model ) ) {
+								
+								$model = new Model( $this->loader, $tablename );
+								$controller = new $controller( $model );
+								
+								if ( method_exists( $controller, $action ) ) {
+									if ( is_int( $this->id ) ) {
+										$controller->$action( $this->id );
+										break;
+									}
+									else {
+										$controller->$action();
+										break;
+									}
+								}
+								
+							}
 						}
+						else {
 						
-						if ( isset( $route['params'] ) && !empty ($route['params'] ) ) {
+							$controller = 'app\\controllers\\FallbackController';
+							$controller = new $controller();
 							
-							$this->params = $route['params'];
-							
+							$controller->index();
+							break;
+						
 						}
 						
 					}
 					
 				}
-			 
+				
 			}
-		
-		}
-	
-	}
-	
-	public function getController() {
-		
-		if ( class_exists( $this->controller ) ) {
-			
-			return $this->controller;
 			
 		}
-		else {
-			
-			$this->model = '\\app\\models\\Fallback';
-			$this->controller = '\\app\\controllers\\FallbackController';
-			
-			
-		}
-		
-		return $this->controller;
-		
-	}
-	
-	public function getItemId() {
-		
-		if ( !empty ( $this->item_id ) ) {
-			
-			return $this->item_id;
-			
-		}
-		else {
-			
-			return false;
-			
-		}
-		
-	}
-	
-	public function getModel() {
-		
-		return $this->model;
-		
-	}
-	
-	public function getAction() {
-		
-		return $this->action;
-		
-	}
-	
-	public function getParameters() {
-		
-		return $this->params;
-		
-	}
-	
-	public function getTableName() {
-		
-		return $this->tablename;
 		
 	}
 	

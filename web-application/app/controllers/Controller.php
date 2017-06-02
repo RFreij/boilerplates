@@ -21,22 +21,9 @@ class Controller {
 	
 	protected $model;
 	
-	public function __construct( Router $router, Model $model ) {
+	public function __construct( Model $model = null ) {
 		
 		$this->model = $model;
-		
-		$action = $router->getAction();
-		
-		if ( empty ( $router->getParameters() ) ) {
-			
-			$this->$action();
-			
-		}
-		else {
-			
-			$this->$action( $router->getParameters() );
-			
-		}
 		
 	}
 	

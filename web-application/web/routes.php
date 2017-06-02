@@ -18,3 +18,9 @@ $routes[] = [
 	"controller" => "FallbackController",
 	"action" => "index"
 ];
+
+$routes[] = [
+	"path" => "/web-application/testing/test",
+	"controller" => "FallbackController",
+	"action" => "index"
+];

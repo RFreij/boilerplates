@@ -35,7 +35,7 @@ class Validator {
 		
 	}
 	
-	public function setValidationError( $error ) {
+	private function setValidationError( $error ) {
 		
 		$this->validationErrors[] = $error;
 		
@@ -83,6 +83,12 @@ class Validator {
 					
 				break;
 				
+				case ValueType::DateTime_local :
+					
+					$valid = filter_input( INPUT_POST, $rule['name'], FILTER_SANITIZE_STRING );
+					
+				break;
+				
 			}
 			
 			if ( !$valid ) {
@@ -91,6 +97,51 @@ class Validator {
 					'errorType' => MessageType::Error,
 					'errorContent' => "Er is geen geldige waarde voor: " . $rule['name'] . " gegeven."
 				]);
+				
+			}
+			
+			if ( isset( $rule['dateTimeLocal'] ) ) {
+				
+				$date = \DateTime::createFromFormat("Y-m-d\TH:i", $valid );
+				if ( !empty( \DateTime::getLastErrors()['errors'] ) ) {
+					
+					$this->setValidationError([
+						'errorType' => MessageType::Error,
+						'errorContent' => $valid . var_dump( \DateTime::getLastErrors())
+					]);
+					
+				}
+				else {
+					
+					$_POST[$rule['name']] = $date->format('Y-m-d H:i:s');
+				
+				}
+				
+			}
+			
+			if ( isset( $rule['mustBeSelected'] ) && $rule['mustBeSelected'] == true ) {
+				
+				if ( $valid == 0 ) {
+					
+					$this->setValidationError([
+						'errorType' => MessageType::Error,
+						'errorContent' => 'Er moet een '. $rule['name'] .' worden ingevuld'
+					]);
+					
+				}
+				
+			}
+			
+			if ( isset( $rule['required'] ) && $rule['required'] == true ) {
+				
+				if ( strlen( trim( $valid ) ) == 0 ) {
+					
+					$this->setValidationError([
+						'errorType' => MessageType::Error,
+						'errorContent' => "Het veld met de naam " . $rule['name'] . " moet worden ingevuld."
+					]);
+					
+				}
 				
 			}
 			
