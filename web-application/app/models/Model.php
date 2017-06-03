@@ -11,15 +11,22 @@ namespace app\models;
 
 use app\ServiceLoader;
 use app\services\Authenticate;
+use app\services\Database;
 use app\services\libraries\MessageType;
 use app\services\Message;
 use \PDO;
 
 class Model {
 	
+	/** @var  User */
 	private $user;
+	/** @var  PDO */
 	protected $db;
+	/** @var Authenticate */
 	protected $auth;
+	/** @var ServiceLoader */
+	protected $loader;
+	/** @var Message */
 	public $message;
 	
 	const TABLENAME = "";
@@ -29,6 +36,7 @@ class Model {
 		$this->db = $load->get('Database')->db;
 		$this->message = $load->get('Message');
 		$this->auth = $load->get('Authenticate');
+		$this->loader = $load;
 		
 		if ( isset( $_SESSION['user'] ) && is_object( $_SESSION['user'] ) ) {
 			$this->user = $_SESSION['user'];

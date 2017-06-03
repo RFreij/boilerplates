@@ -13,6 +13,7 @@ namespace app\services\libraries;
 class ParamType {
 	
 	const INTEGER = "(\d+)";
-	const STRING = "([a-zA-Z0-9\-]+)";
+	const NAME = "(\w+)";
+	const TITLE = "([a-zA-Z0-9\-]+)";
 	
 }

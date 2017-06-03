@@ -21,6 +21,8 @@ use app\models\Model;
 class Controller {
 	
 	const MODEL = "Model";
+	
+	/** @var Model */
 	protected $model;
 	
 	public function __construct( $loader ) {
@@ -31,6 +33,10 @@ class Controller {
 			$this->model = new $model( $loader );
 		}
 		
+	}
+	
+	public function isPost() {
+		return ( $_SERVER['REQUEST_METHOD'] == "POST" ) ? true : false;
 	}
 	
 	public function render( $view, $data = [] ) {
@@ -49,11 +55,7 @@ class Controller {
 			
 			$this->model->message->clear();
 			
-			if ( isset( $data['title'] ) ) {
-				
-				unset ( $data['title'] );
-				
-			}
+			if ( isset( $data['title'] ) ) unset ( $data['title'] );
 			
 			include_once( 'public/template/index.php' );
 			
