@@ -35,6 +35,8 @@ $load->set( 'Authenticate', new Authenticate(), true );
 
 $router = new Router( $load );
 
+require('web/routes.php');
+
 $router->dispatch();
 
 /*

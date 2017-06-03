@@ -7,20 +7,6 @@
  * Time: 09:20
  */
 
-$routes[] = [
-	"path" => "/web-application/test/{id}",
-	"controller" => "FallbackController",
-	"action" => "index"
-];
-
-$routes[] = [
-	"path" => "/web-application/testing/test/{id}",
-	"controller" => "FallbackController",
-	"action" => "index"
-];
-
-$routes[] = [
-	"path" => "/web-application/testing/test",
-	"controller" => "FallbackController",
-	"action" => "index"
-];
+$router->add( '/web-application', 'TestController@sdf');
+$router->add( '/web-application/test', 'TestController@view');
+$router->add( '/web-application/test/{id}', 'TestController@view');

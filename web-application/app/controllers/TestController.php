@@ -15,4 +15,8 @@ class TestController extends Controller {
 	public function index() {
 		echo"hoi";
 	}
+	
+	public function view( $id ) {
+		echo $id;
+	}
 }

@@ -9,91 +9,89 @@
 
 namespace app\services;
 
-use app\controllers\Controller;
-use app\models\Model;
-use \PDO;
-use app\controllers\DefaultController;
+use app\services\libraries\ParamType;
 use app\controllers\FallbackController;
-use app\models\Fallback;
 use app\ServiceLoader;
 
 class Router {
 	
 	private $loader;
-	private $path;
-	private $id;
+	private $routes = [];
+	private $notFound;
 	
 	public function __construct( ServiceLoader $loader ) {
-	
 		$this->loader = $loader;
-		$uri = preg_match_all( "%^(\D*)\/?(\d+)?$%", $_SERVER['REQUEST_URI'], $matches );
-		
-		
-		print_r($matches);
-		$this->path = $matches[1][0];
-		$this->id = $matches[2][0];
-		
+		$this->notFound = function( $url ) {
+			$fallBack = new FallbackController( $this->loader );
+			$fallBack->index( $url );
+		};
+	}
+	
+	public function add( $url, $action ) {
+		$this->routes[$url] = $action;
+	}
+	
+	public function setNotFound( $action ) {
+		$this->notFound = $action;
 	}
 	
 	public function dispatch() {
-		
-		$db = $this->loader->get('Database')->db;
-		
-		$sql = "SELECT * FROM `routes`";
-		$statement = $db->prepare( $sql );
-		
-		$result = $statement->execute();
-		
-		if ( $result ) {
+	
+		foreach( $this->routes as $url => $action ) {
 			
-			$routes = $statement->fetchAll( PDO::FETCH_ASSOC );
-			
-			if ( count( $routes ) > 0 ) {
+			if ( preg_match( "%{(.*)}%", $url, $matches ) ) {
+				$expression = $this->getExpression( $matches );
+				$url = str_replace( "{" . $expression[0] . "}", $expression[1], $url );
+			};
+
+			if ( preg_match( "%^" . $url . "$%", $_SERVER['REQUEST_URI'], $matches ) ) {
+				if ( is_callable( $action ) ) return $action();
 				
-				foreach ( $routes as $route ) {
-					
-					if ( $route['path'] == $this->path ) {
-						
-						$model = 'app\\models\\'. $route['controller'];
-						$tablename = strtolower( $route['controller'].'s');
-						$controller = 'app\\controllers\\'. $route['controller'].'Controller';
-						
-						$action = $route['action'];
-						
-						if ( class_exists( $controller ) ) {
-							if ( class_exists( $model ) ) {
-								
-								$model = new Model( $this->loader, $tablename );
-								$controller = new $controller( $model );
-								
-								if ( method_exists( $controller, $action ) ) {
-									if ( is_int( $this->id ) ) {
-										$controller->$action( $this->id );
-										break;
-									}
-									else {
-										$controller->$action();
-										break;
-									}
-								}
-								
-							}
-						}
-						else {
-						
-							$controller = 'app\\controllers\\FallbackController';
-							$controller = new $controller();
-							
-							$controller->index();
-							break;
-						
-						}
-						
-					}
-					
+				$actionArray = explode('@', $action );
+				$controller = 'app\\controllers\\'.$actionArray[0];
+				$method = $actionArray[1];
+				
+				$param = ( isset( $matches[1] ) ) ? $matches[1] : "";
+				
+				if ( class_exists( $controller ) ) {
+					return (new $controller( $this->loader ))->$method( $param );
 				}
 				
 			}
+			
+		}
+		
+		call_user_func( $this->notFound, [$_SERVER['REQUEST_URI']] );
+	
+	}
+	
+	public function getExpression( $matches ) {
+	
+		switch ( $matches[1] ) {
+			
+			case 'id':
+				
+				return ['id', ParamType::INTEGER];
+				
+			break;
+			
+			case 'name':
+				
+				return ['name', ParamType::STRING];
+				
+			break;
+			
+			case 'title':
+				
+				return ['title', ParamType::STRING];
+				
+			break;
+			
+			default:
+				
+				return ParamType::INTEGER;
+				
+			break;
 			
 		}
 		

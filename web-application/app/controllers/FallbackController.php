@@ -12,9 +12,9 @@ namespace app\controllers;
 
 class FallbackController extends Controller {
 	
-	public function index() {
+	public function index( $url ) {
 	
-		echo"hoi";
+//		echo"hoi";
 	
 	}
 	

@@ -45,6 +45,15 @@ class Message {
 		
 	}
 	
+	public function createDatabaseError() {
+		
+		$this->createMessage(
+			MessageType::Error,
+			"Er is iets mis gegaan bij het bijwerken van de database."
+		);
+		
+	}
+	
 	public function getMessages() {
 		
 		return $this->messages;

@@ -15,8 +15,12 @@ class Autoloader {
 		
 		spl_autoload_register(function ( $file ) {
 			
-			$file = str_replace("\\", "/", $file );
-			include $file . '.php';
+			if ( !class_exists( $file ) ) {
+				
+				$file = str_replace("\\", "/", $file );
+				include $file . '.php';
+				
+			}
 			
 		});
 	

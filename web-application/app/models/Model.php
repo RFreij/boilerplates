@@ -10,27 +10,39 @@
 namespace app\models;
 
 use app\ServiceLoader;
+use app\services\Authenticate;
+use app\services\libraries\MessageType;
+use app\services\Message;
 use \PDO;
 
 class Model {
-
+	
+	private $user;
 	protected $db;
 	protected $auth;
 	public $message;
-	protected $tablename;
 	
-	function __construct( ServiceLoader $loader, $tablename ) {
+	const TABLENAME = "";
 	
-		$this->db = $loader->get('Database');
-		$this->message = $loader->get('Message');
-		$this->auth = $loader->get('Authenticate');
-		$this->tablename = $tablename;
+	function __construct( ServiceLoader $load ) {
+	
+		$this->db = $load->get('Database')->db;
+		$this->message = $load->get('Message');
+		$this->auth = $load->get('Authenticate');
 		
+		if ( isset( $_SESSION['user'] ) && is_object( $_SESSION['user'] ) ) {
+			$this->user = $_SESSION['user'];
+		}
+		
+	}
+	
+	public function getUser() {
+		return ( isset( $this->user ) && is_a( $this->user, "User" ) ) ? $this->user : false;
 	}
 	
 	public function fetchAll() {
 		
-		$sql = "SELECT * FROM `" . $this->tablename . "`";
+		$sql = "SELECT * FROM `" . $this::TABLENAME . "`";
 		$statement = $this->db->prepare( $sql );
 		
 		$result = $statement->execute();
@@ -45,7 +57,7 @@ class Model {
 	 */
 	public function fetchSingle( $id ) {
 		
-		$sql = "SELECT * FROM `" . $this->tablename . "` WHERE `id` = :id";
+		$sql = "SELECT * FROM `" . $this::TABLENAME . "` WHERE `id` = :id";
 		$statement = $this->db->prepare( $sql );
 		$statement->bindValue( ":id", $id, PDO::PARAM_INT );
 		
@@ -57,18 +69,16 @@ class Model {
 	
 	public function delete( $id ) {
 		
-		$sql = "SELECT * FROM `" . $this->tablename . "` WHERE `id` = :id";
+		$sql = "SELECT * FROM `" . $this::TABLENAME . "` WHERE `id` = :id";
 		$statement = $this->db->prepare( $sql );
 		
 		$statement->bindValue( ":id", $id, PDO::PARAM_INT );
 		
 		$result = $statement->execute();
 		
-		$data = $this->returnData( $statement, $result );
-		
-		if ( count( $data ) > 0 ) {
+		if ( $statement->rowCount() > 0 ) {
 			
-			$sql = "DELETE FROM `" . $this->tablename . "` WHERE `id` = :id";
+			$sql = "DELETE FROM `" . $this::TABLENAME . "` WHERE `id` = :id";
 			$statement = $this->db->prepare( $sql );
 			
 			$statement->bindValue( ":id", $id, PDO::PARAM_INT );
@@ -106,6 +116,23 @@ class Model {
 		}
 		
 		return $data;
+		
+	}
+	
+	public function executeSafeQuery( $sql ) {
+	
+		$statement = $this->db->prepare( $sql );
+		
+		$result = $statement->execute();
+		
+		if ( $result ) {
+			return $statement->fetch( PDO::FETCH_ASSOC );
+		}
+		else {
+			$this->message->createDatabaseError();
+		}
+	
+		return false;
 		
 	}
 	
