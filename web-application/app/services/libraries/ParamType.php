@@ -13,6 +13,6 @@ namespace app\services\libraries;
 class ParamType {
 	
 	const INTEGER = "(\d+)";
-	const STRING = "(\w)";
+	const STRING = "([a-zA-Z0-9\-]+)";
 	
 }

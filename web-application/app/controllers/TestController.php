@@ -12,11 +12,17 @@ namespace app\controllers;
 
 class TestController extends Controller {
 	
+	const MODEL = "Test";
+	
 	public function index() {
 		echo"hoi";
 	}
 	
 	public function view( $id ) {
 		echo $id;
+	}
+	
+	public function name( $name ) {
+		echo $name;
 	}
 }
