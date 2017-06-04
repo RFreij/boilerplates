@@ -77,13 +77,13 @@ class Router {
 			
 			case 'name':
 				
-				return ['name', ParamType::STRING];
+				return ['name', ParamType::NAME];
 				
 			break;
 			
 			case 'title':
 				
-				return ['title', ParamType::STRING];
+				return ['title', ParamType::TITLE];
 				
 			break;
 			
