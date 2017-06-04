@@ -29,18 +29,26 @@ class Model {
 	
 	const TABLENAME = "";
 	
-	function __construct( ServiceLoader $load ) {
-	
-		$this->db = $load->get('Database')->db;
-		$this->message = $load->get('Message');
-		$this->auth = $load->get('Authenticate');
-		$this->loader = $load;
+	/**
+	 * Model constructor.
+	 *
+	 * @param ServiceLoader $load
+	 */
+	function __construct ( ServiceLoader $load ) {
+		
+		$this->db      = $load->get( 'Database' )->db;
+		$this->message = $load->get( 'Message' );
+		$this->auth    = $load->get( 'Authenticate' );
+		$this->loader  = $load;
 		
 	}
 	
-	public function fetchAll() {
+	/**
+	 * @return array|mixed
+	 */
+	public function fetchAll () {
 		
-		$sql = "SELECT * FROM `" . $this::TABLENAME . "`";
+		$sql       = "SELECT * FROM `" . $this::TABLENAME . "`";
 		$statement = $this->db->prepare( $sql );
 		
 		$result = $statement->execute();
@@ -49,13 +57,14 @@ class Model {
 		
 	}
 	
-	/*
-	 * param String table: naam tabel ( enkelvoud van Class )
-	 * param Integer id: id dat in controller gevalideerd is met filter_input
+	/**
+	 * @param $id
+	 *
+	 * @return array|mixed
 	 */
-	public function fetchSingle( $id ) {
+	public function fetchSingle ( $id ) {
 		
-		$sql = "SELECT * FROM `" . $this::TABLENAME . "` WHERE `id` = :id";
+		$sql       = "SELECT * FROM `" . $this::TABLENAME . "` WHERE `id` = :id";
 		$statement = $this->db->prepare( $sql );
 		$statement->bindValue( ":id", $id, PDO::PARAM_INT );
 		
@@ -65,9 +74,12 @@ class Model {
 		
 	}
 	
-	public function delete( $id ) {
+	/**
+	 * @param $id
+	 */
+	public function delete ( $id ) {
 		
-		$sql = "SELECT * FROM `" . $this::TABLENAME . "` WHERE `id` = :id";
+		$sql       = "SELECT * FROM `" . $this::TABLENAME . "` WHERE `id` = :id";
 		$statement = $this->db->prepare( $sql );
 		
 		$statement->bindValue( ":id", $id, PDO::PARAM_INT );
@@ -75,7 +87,7 @@ class Model {
 		
 		if ( $statement->rowCount() > 0 ) {
 			
-			$sql = "DELETE FROM `" . $this::TABLENAME . "` WHERE `id` = :id";
+			$sql       = "DELETE FROM `" . $this::TABLENAME . "` WHERE `id` = :id";
 			$statement = $this->db->prepare( $sql );
 			
 			$statement->bindValue( ":id", $id, PDO::PARAM_INT );
@@ -85,7 +97,7 @@ class Model {
 				$this->message->createMessage( MessageType::Success, "Data succesvol verwijdert" );
 			}
 			else {
-				$this->message->createMessage( MessageType::Error, "Er is iets mis gegaan bij het bijwerken van de database tijdens het verwijderen. ");
+				$this->message->createMessage( MessageType::Error, "Er is iets mis gegaan bij het bijwerken van de database tijdens het verwijderen. " );
 			}
 			
 		}
@@ -95,7 +107,14 @@ class Model {
 		
 	}
 	
-	private function returnData( \PDOStatement $statement, $result, $single = false ) {
+	/**
+	 * @param \PDOStatement $statement
+	 * @param               $result
+	 * @param bool          $single
+	 *
+	 * @return array|mixed
+	 */
+	private function returnData ( \PDOStatement $statement, $result, $single = false ) {
 		
 		$data = [];
 		
@@ -112,10 +131,15 @@ class Model {
 		
 	}
 	
-	public function executeSafeQuery( $sql ) {
-	
+	/**
+	 * @param $sql
+	 *
+	 * @return bool|mixed
+	 */
+	public function executeSafeQuery ( $sql ) {
+		
 		$statement = $this->db->prepare( $sql );
-		$result = $statement->execute();
+		$result    = $statement->execute();
 		
 		if ( $result ) {
 			return $statement->fetch( PDO::FETCH_ASSOC );
@@ -123,7 +147,7 @@ class Model {
 		else {
 			$this->message->createDatabaseError();
 		}
-	
+		
 		return false;
 		
 	}

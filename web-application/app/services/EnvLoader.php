@@ -24,7 +24,6 @@ class EnvLoader {
 			foreach ( $envFile as $en ) {
 				
 				$expl = explode( '=', $en );
-				
 				$this->envVariables[trim($expl[0])] = trim($expl[1]);
 				
 			}
@@ -36,14 +35,10 @@ class EnvLoader {
 	public function getVariable( $variable ) {
 		
 		if ( key_exists( $variable, $this->envVariables ) ) {
-			
 			return $this->envVariables[$variable];
-			
 		}
 		else {
-			
 			return null;
-			
 		}
 		
 	}

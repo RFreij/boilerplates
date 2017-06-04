@@ -15,68 +15,95 @@ use app\ServiceLoader;
 
 class Router {
 	
+	/**
+	 * @var ServiceLoader
+	 */
 	private $loader;
 	private $routes = [];
 	private $notFound;
 	
-	public function __construct( ServiceLoader $loader ) {
-		$this->loader = $loader;
-		$this->notFound = function( $url ) {
+	/**
+	 * Router constructor.
+	 *
+	 * @param ServiceLoader $loader
+	 */
+	public function __construct ( ServiceLoader $loader ) {
+		
+		$this->loader   = $loader;
+		$this->notFound = function ( $url ) {
+			
 			$fallBack = new FallbackController( $this->loader );
 			$fallBack->index( $url );
 		};
 	}
 	
-	public function add( $url, $action ) {
-		$this->routes[$url] = $action;
+	/**
+	 * @param $url
+	 * @param $action
+	 */
+	public function add ( $url, $action ) {
+		
+		$this->routes[ $url ] = $action;
 	}
 	
-	public function setNotFound( $action ) {
+	/**
+	 * @param $action
+	 */
+	public function setNotFound ( $action ) {
+		
 		$this->notFound = $action;
 	}
 	
-	public function dispatch() {
-	
-		foreach( $this->routes as $url => $action ) {
+	/**
+	 * @return mixed
+	 */
+	public function dispatch () {
+		
+		foreach ( $this->routes as $url => $action ) {
 			
 			if ( preg_match( "%{(.*)}%", $url, $matches ) ) {
 				$expression = $this->getExpression( $matches );
-				$url = str_replace( "{" . $expression[0] . "}", $expression[1], $url );
+				$url        = str_replace( "{" . $expression[ 0 ] . "}", $expression[ 1 ], $url );
 			};
-
-			if ( preg_match( "%^" . $url . "$%", $_SERVER['REQUEST_URI'], $matches ) ) {
-				if ( is_callable( $action ) ) return $action();
+			
+			if ( preg_match( "%^" . $url . "$%", $_SERVER[ 'REQUEST_URI' ], $matches ) ) {
+				if ( is_callable( $action ) ) {
+					return $action();
+				}
 				
-				$actionArray = explode('@', $action );
-				$controller = 'app\\controllers\\'.$actionArray[0];
-				$method = $actionArray[1];
+				$actionArray = explode( '@', $action );
+				$controller  = 'app\\controllers\\' . $actionArray[ 0 ];
+				$method      = $actionArray[ 1 ];
 				
-				$param = ( isset( $matches[1] ) ) ? $matches[1] : "";
+				$param = ( isset( $matches[ 1 ] ) ) ? $matches[ 1 ] : "";
 				
 				if ( class_exists( $controller ) ) {
-					return (new $controller( $this->loader ))->$method( $param );
+					return ( new $controller( $this->loader ) )->$method( $param );
 				}
 				
 			}
 			
 		}
 		
-		call_user_func( $this->notFound, [$_SERVER['REQUEST_URI']] );
-	
+		call_user_func( $this->notFound, [ $_SERVER[ 'REQUEST_URI' ] ] );
+		
 	}
 	
-	public function getExpression( $matches ) {
-	
-		switch ( $matches[1] ) {
+	/**
+	 * @param $matches
+	 *
+	 * @return array|string
+	 */
+	public function getExpression ( $matches ) {
+		
+		switch ( $matches[ 1 ] ) {
 			
 			case 'id':
-				
-				return ['id', ParamType::INTEGER];
-				
-			break;
+				return [ 'id', ParamType::INTEGER ];
+				break;
 			
 			case 'name':
-				
+			
 				return ['name', ParamType::NAME];
 				
 			break;
@@ -88,10 +115,8 @@ class Router {
 			break;
 			
 			default:
-				
 				return ParamType::INTEGER;
-				
-			break;
+				break;
 			
 		}
 		
