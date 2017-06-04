@@ -18,6 +18,7 @@ class ValueType {
 	const Email = 3;
 	const Url = 4;
 	const NumberInt = 5;
-	const DateTime_local = 6;
+	const Date = 6;
+	const DateTime_local = 7;
 	
 }

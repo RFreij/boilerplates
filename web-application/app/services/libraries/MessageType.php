@@ -9,9 +9,7 @@
 
 namespace app\services\libraries;
 
-use \SplEnum;
-
-class MessageType extends SplEnum {
+class MessageType {
 
 	const __default = self::Notification;
 	

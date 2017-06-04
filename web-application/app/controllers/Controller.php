@@ -49,7 +49,8 @@ class Controller {
 			$data['messages']['errors'] = $this->model->message->getErrors();
 			$data['messages']['notifications'] = $this->model->message->getNotifications();
 			$data['messages']['success'] = $this->model->message->getSuccess();
-			
+			$stack['auth'] = $this->model->auth;
+			$stack['user'] = ( isset( $_SESSION['user'] ) ) ? $_SESSION['user'] : null;
 			
 			extract( $data );
 			

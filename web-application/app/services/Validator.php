@@ -42,7 +42,7 @@ class Validator {
 	}
 	
 	public function validate() {
-	
+		
 		foreach ( $this->validationRules as $rule ) {
 			
 			switch ( $rule['type'] ) {
@@ -50,48 +50,154 @@ class Validator {
 				case ValueType::String :
 					
 					$valid = filter_input( INPUT_POST, $rule['name'], FILTER_SANITIZE_STRING );
+					
+					break;
 				
-				break;
-
 				case ValueType::Boolean :
 					
 					$valid = filter_input( INPUT_POST, $rule['name'], FILTER_VALIDATE_BOOLEAN );
 					
-				break;
+					break;
 				
 				case ValueType::Email :
 					
 					$valid = filter_input( INPUT_POST, $rule['name'], FILTER_VALIDATE_EMAIL );
 					
-				break;
+					break;
 				
 				case ValueType::Integer :
 					
 					$valid = filter_input( INPUT_POST, $rule['name'], FILTER_VALIDATE_INT );
 					
-				break;
+					break;
 				
 				case ValueType::NumberInt :
 					
 					$valid = filter_input( INPUT_POST, $rule['name'], FILTER_SANITIZE_NUMBER_INT );
 					
-				break;
+					break;
 				
 				case ValueType::Url :
 					
 					$valid = filter_input( INPUT_POST, $rule['name'], FILTER_VALIDATE_URL );
 					
-				break;
+					break;
 				
 				case ValueType::DateTime_local :
 					
 					$valid = filter_input( INPUT_POST, $rule['name'], FILTER_SANITIZE_STRING );
 					
-				break;
+					break;
+				
+				case ValueType::Date :
+					
+					$valid = filter_input( INPUT_POST, $rule['name'], FILTER_SANITIZE_STRING );
+					
+					break;
 				
 			}
 			
-			if ( !$valid ) {
+			if ( $valid ) {
+				
+				if ( $rule['name'] == ValueType::Date && isset( $rule['required'] ) && $rule['required'] ) {
+					
+					$date = \DateTime::createFromFormat( "Y-m-d", $valid );
+					if ( ! empty ( \DateTime::getLastErrors()['errors'] ) ) {
+						
+						$this->setValidationError( [
+							'errorType'    => MessageType::Error,
+							'errorContent' => "Er is geen juiste datum ingevoerd"
+						] );
+						
+					}
+					
+				}
+				
+				if ( isset( $rule['dateTimeLocal'] ) ) {
+					
+					$date = \DateTime::createFromFormat( "Y-m-d\TH:i", $valid );
+					if ( ! empty( \DateTime::getLastErrors()['errors'] ) ) {
+						
+						$this->setValidationError( [
+							'errorType'    => MessageType::Error,
+							'errorContent' => "Bij veld " . $rule['name'] . " Is geen geldige datum en tijd gegeven"
+						] );
+						
+					} else {
+						
+						$_POST[ $rule['name'] ] = $date->format( 'Y-m-d H:i:s' );
+						
+					}
+					
+				}
+				
+				if ( isset( $rule['mustBeSelected'] ) && $rule['mustBeSelected'] == true ) {
+					
+					if ( $valid == 0 ) {
+						
+						$this->setValidationError( [
+							'errorType'    => MessageType::Error,
+							'errorContent' => 'Er moet een ' . $rule['name'] . ' worden ingevuld'
+						] );
+						
+					}
+					
+				}
+				
+				if ( isset( $rule['required'] ) && $rule['required'] == true ) {
+					
+					if ( strlen( trim( $valid ) ) == 0 ) {
+						
+						$this->setValidationError( [
+							'errorType'    => MessageType::Error,
+							'errorContent' => "Het veld met de naam " . $rule['name'] . " moet worden ingevuld."
+						] );
+						
+					}
+					
+				}
+				
+				if ( isset ( $rule['checkIfExists'] ) ) {
+					
+					if ( $this->checkIfExists( $rule, $valid ) ) {
+						
+						$this->setValidationError( [
+							'errorType'    => MessageType::Error,
+							'errorContent' => 'Er is al een waarde met deze ' . $rule['name'] . '.'
+						] );
+						
+					}
+					
+				}
+				
+				if ( isset ( $rule['maxLength'] ) ) {
+					
+					if ( strlen( $valid ) > $rule['maxLength'] ) {
+						
+						$this->setValidationError( [
+							'errorType'    => MessageType::Error,
+							'errorContent' => $rule['name'] . " Mag maximaal " . $rule['maxLength'] . " aantal tekens bevatten"
+						] );
+						
+					}
+					
+				}
+				
+				if ( isset ( $rule['minLength'] ) ) {
+					
+					if ( strlen( $valid ) < $rule['minLength'] ) {
+						
+						$this->setValidationError( [
+							'errorType'    => MessageType::Error,
+							'errorContent' => $rule['name'] . " moet minimaal " . $rule['minLength'] . " aantal tekens bevatten"
+						] );
+						
+					}
+					
+				}
+				
+			}
+			else {
 				
 				$this->setValidationError([
 					'errorType' => MessageType::Error,
@@ -100,94 +206,10 @@ class Validator {
 				
 			}
 			
-			if ( isset( $rule['dateTimeLocal'] ) ) {
-				
-				$date = \DateTime::createFromFormat("Y-m-d\TH:i", $valid );
-				if ( !empty( \DateTime::getLastErrors()['errors'] ) ) {
-					
-					$this->setValidationError([
-						'errorType' => MessageType::Error,
-						'errorContent' => $valid . var_dump( \DateTime::getLastErrors())
-					]);
-					
-				}
-				else {
-					
-					$_POST[$rule['name']] = $date->format('Y-m-d H:i:s');
-				
-				}
-				
-			}
-			
-			if ( isset( $rule['mustBeSelected'] ) && $rule['mustBeSelected'] == true ) {
-				
-				if ( $valid == 0 ) {
-					
-					$this->setValidationError([
-						'errorType' => MessageType::Error,
-						'errorContent' => 'Er moet een '. $rule['name'] .' worden ingevuld'
-					]);
-					
-				}
-				
-			}
-			
-			if ( isset( $rule['required'] ) && $rule['required'] == true ) {
-				
-				if ( strlen( trim( $valid ) ) == 0 ) {
-					
-					$this->setValidationError([
-						'errorType' => MessageType::Error,
-						'errorContent' => "Het veld met de naam " . $rule['name'] . " moet worden ingevuld."
-					]);
-					
-				}
-				
-			}
-			
-			if ( isset ( $rule['checkIfExists'] ) ) {
-				
-				if ( $this->checkIfExists( $rule, $valid ) ){
-				
-					$this->setValidationError([
-						'errorType' => MessageType::Error,
-						'errorContent' => 'Er is al een waarde met deze ' . $rule['name'] . '.'
-					]);
-				
-				}
-				
-			}
-			
-			if ( isset ( $rule['maxLength'] ) ) {
-				
-				if ( strlen( $valid ) > $rule['maxLength'] ) {
-					
-					$this->setValidationError([
-						'errorType' => MessageType::Error,
-						'errorContent' => $rule['name'] . " Mag maximaal " . $rule['maxLength'] . " aantal tekens bevatten"
-					]);
-					
-				}
-				
-			}
-			
-			if ( isset ( $rule['minLength'] ) ) {
-				
-				if ( strlen( $valid ) < $rule['minLength'] ) {
-					
-					$this->setValidationError([
-						'errorType' => MessageType::Error,
-						'errorContent' => $rule['name'] . " moet minimaal " . $rule['minLength'] . " aantal tekens bevatten"
-					]);
-					
-				}
-				
-			}
-			
 		}
 		
 		if ( count( $this->validationErrors ) > 0 ) {
-	
+			
 			$this->createMessages();
 			return false;
 			
@@ -198,7 +220,7 @@ class Validator {
 			
 		}
 		
-	
+		
 	}
 	
 	private function createMessages() {
@@ -212,7 +234,7 @@ class Validator {
 	}
 	
 	private function checkIfExists( $rule, $value ) {
-	
+		
 		$sql = "SELECT " . $rule['checkIfExists'] . " FROM " . $this->tablename . " WHERE " . $rule['checkIfExists'] . " = :value";
 		$statement = $this->db->prepare( $sql );
 		
@@ -231,7 +253,7 @@ class Validator {
 		}
 		
 		return false;
-	
+		
 	}
 	
 }

@@ -24,17 +24,9 @@ class User extends Model {
 		$this->username = $username;
 	}
 	
-	public function isAdmin() {
-		return ( $this->admin == true ) ? true : false;
-	}
-	
-	public function isLoggedIn() {
-		return ( $_SESSION['user']['logged_in'] == true ) ? true : false;
-	}
-	
 	public function getUser() {
 		
-		$sql = "SELECT * FROM `" . $this::TABLENAME . "` WHERE `username` = :username";
+		$sql = "SELECT * FROM `users` WHERE `username` = :username";
 		$statement = $this->db->prepare( $sql );
 		
 		$statement->bindvalue( ":username", $this->username, PDO::PARAM_STR );

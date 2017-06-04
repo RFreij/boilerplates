@@ -18,16 +18,14 @@ use \PDO;
 
 class Model {
 	
-	/** @var  User */
-	private $user;
 	/** @var  PDO */
 	protected $db;
-	/** @var Authenticate */
-	protected $auth;
 	/** @var ServiceLoader */
 	protected $loader;
 	/** @var Message */
 	public $message;
+	/** @var Authenticate */
+	public $auth;
 	
 	const TABLENAME = "";
 	
@@ -38,14 +36,6 @@ class Model {
 		$this->auth = $load->get('Authenticate');
 		$this->loader = $load;
 		
-		if ( isset( $_SESSION['user'] ) && is_object( $_SESSION['user'] ) ) {
-			$this->user = $_SESSION['user'];
-		}
-		
-	}
-	
-	public function getUser() {
-		return ( isset( $this->user ) && is_a( $this->user, "User" ) ) ? $this->user : false;
 	}
 	
 	public function fetchAll() {
@@ -81,7 +71,6 @@ class Model {
 		$statement = $this->db->prepare( $sql );
 		
 		$statement->bindValue( ":id", $id, PDO::PARAM_INT );
-		
 		$result = $statement->execute();
 		
 		if ( $statement->rowCount() > 0 ) {
@@ -90,37 +79,33 @@ class Model {
 			$statement = $this->db->prepare( $sql );
 			
 			$statement->bindValue( ":id", $id, PDO::PARAM_INT );
-			
 			$result = $statement->execute();
 			
 			if ( $result ) {
-				
 				$this->message->createMessage( MessageType::Success, "Data succesvol verwijdert" );
-				
 			}
 			else {
-				
 				$this->message->createMessage( MessageType::Error, "Er is iets mis gegaan bij het bijwerken van de database tijdens het verwijderen. ");
-				
 			}
 			
 		}
 		else {
-			
 			$this->message->createMessage( MessageType::Notification, "Er zijn geen gegevens gevonden met het opgegeven ID" );
-			
 		}
 		
 	}
 	
-	public function returnData( \PDOStatement $statement, $result ) {
+	private function returnData( \PDOStatement $statement, $result, $single = false ) {
 		
 		$data = [];
 		
 		if ( $result ) {
-			
-			$data = $statement->fetchAll( PDO::FETCH_ASSOC );
-			
+			if ( $single ) {
+				$data = $statement->fetch( PDO::FETCH_ASSOC );
+			}
+			else {
+				$data = $statement->fetchAll( PDO::FETCH_ASSOC );
+			}
 		}
 		
 		return $data;
@@ -130,7 +115,6 @@ class Model {
 	public function executeSafeQuery( $sql ) {
 	
 		$statement = $this->db->prepare( $sql );
-		
 		$result = $statement->execute();
 		
 		if ( $result ) {

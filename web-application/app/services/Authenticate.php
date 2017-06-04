@@ -14,7 +14,7 @@ class Authenticate {
 	
 	public function checkLoggedIn()
 	{
-		if ( !isset($_SESSION['loggedIn']) or !$_SESSION['loggedIn'] )
+		if ( !isset($_SESSION['user']) or !$_SESSION['user']['logged_in'] )
 		{
 			header( 'Location: /login' );
 			die();

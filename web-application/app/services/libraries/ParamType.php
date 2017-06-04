@@ -9,7 +9,6 @@
 
 namespace app\services\libraries;
 
-
 class ParamType {
 	
 	const INTEGER = "(\d+)";
