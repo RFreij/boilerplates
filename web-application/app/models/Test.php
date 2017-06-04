@@ -9,8 +9,6 @@
 
 namespace app\models;
 
-
 class Test extends Model {
-	
 	
 }

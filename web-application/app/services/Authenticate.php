@@ -9,13 +9,12 @@
 
 namespace app\services;
 
-
 class Authenticate {
 	
-	public function checkLoggedIn()
-	{
-		if ( !isset($_SESSION['user']) or !$_SESSION['user']['logged_in'] )
-		{
+	
+	public function checkLoggedIn () {
+		
+		if ( ! isset( $_SESSION[ 'user' ] ) or ! $_SESSION[ 'user' ][ 'logged_in' ] ) {
 			header( 'Location: /login' );
 			die();
 		}

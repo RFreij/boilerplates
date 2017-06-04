@@ -13,10 +13,9 @@
 
 namespace app\controllers;
 
-
+use app\ServiceLoader;
 use app\services\Router;
 use app\models\Model;
-
 
 class Controller {
 	
@@ -25,9 +24,14 @@ class Controller {
 	/** @var Model */
 	protected $model;
 	
-	public function __construct( $loader ) {
+	/**
+	 * Controller constructor.
+	 *
+	 * @param ServiceLoader $loader
+	 */
+	public function __construct ( $loader ) {
 		
-		$model = 'app\\models\\'. $this::MODEL;
+		$model = 'app\\models\\' . $this::MODEL;
 		
 		if ( class_exists( $model ) ) {
 			$this->model = new $model( $loader );
@@ -35,28 +39,38 @@ class Controller {
 		
 	}
 	
-	public function isPost() {
-		return ( $_SERVER['REQUEST_METHOD'] == "POST" ) ? true : false;
+	/**
+	 * @return bool
+	 */
+	public function isPost () {
+		
+		return ( $_SERVER[ 'REQUEST_METHOD' ] == "POST" ) ? true : false;
 	}
 	
-	public function render( $view, $data = [] ) {
+	/**
+	 * @param       $view
+	 * @param array $data
+	 */
+	public function render ( $view, $data = [] ) {
 		
-		$view = str_replace('.', '/', $view );
+		$view = str_replace( '.', '/', $view );
 		$view = 'public/views/' . $view . '.php';
 		
 		if ( file_exists( $view ) ) {
 			
-			$data['messages']['errors'] = $this->model->message->getErrors();
-			$data['messages']['notifications'] = $this->model->message->getNotifications();
-			$data['messages']['success'] = $this->model->message->getSuccess();
-			$stack['auth'] = $this->model->auth;
-			$stack['user'] = ( isset( $_SESSION['user'] ) ) ? $_SESSION['user'] : null;
+			$data[ 'messages' ][ 'errors' ]        = $this->model->message->getErrors();
+			$data[ 'messages' ][ 'notifications' ] = $this->model->message->getNotifications();
+			$data[ 'messages' ][ 'success' ]       = $this->model->message->getSuccess();
+			$stack[ 'auth' ]                       = $this->model->auth;
+			$stack[ 'user' ]                       = ( isset( $_SESSION[ 'user' ] ) ) ? $_SESSION[ 'user' ] : null;
 			
 			extract( $data );
 			
 			$this->model->message->clear();
 			
-			if ( isset( $data['title'] ) ) unset ( $data['title'] );
+			if ( isset( $data[ 'title' ] ) ) {
+				unset ( $data[ 'title' ] );
+			}
 			
 			include_once( 'public/template/index.php' );
 			
