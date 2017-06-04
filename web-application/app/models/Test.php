@@ -9,6 +9,12 @@
 
 namespace app\models;
 
+use app\services\querybuilder\QueryBuilder;
+
 class Test extends Model {
 	
+	public function test() {
+
+		
+	}
 }

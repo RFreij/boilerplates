@@ -10,12 +10,16 @@
 namespace app\controllers;
 
 
+use app\models\Test;
+
 class TestController extends Controller {
 	
 	const MODEL = "Test";
 	
 	public function index() {
-		echo"hoi";
+		
+		$this->model->test();
+		
 	}
 	
 	public function view( $id ) {
