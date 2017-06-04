@@ -103,12 +103,16 @@ class Router {
 				break;
 			
 			case 'name':
-				return [ 'name', ParamType::STRING ];
-				break;
+			
+				return ['name', ParamType::NAME];
+				
+			break;
 			
 			case 'title':
-				return [ 'title', ParamType::STRING ];
-				break;
+				
+				return ['title', ParamType::TITLE];
+				
+			break;
 			
 			default:
 				return ParamType::INTEGER;
