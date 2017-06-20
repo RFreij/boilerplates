@@ -29,7 +29,7 @@ The following placeholders are available:
 * {title}
     * Captures a full string that has the following characters: a-zA-Z0-9 and -
     
-###Examples
+### Examples
 * Path with {id}
 ```
 $router->add( '/path/edit/{id}', 'PageController@edit' );
