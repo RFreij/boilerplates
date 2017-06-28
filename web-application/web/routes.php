@@ -11,3 +11,12 @@ $router->add( '/web-application/', 'TestController@index');
 $router->add( '/web-application/test', 'TestController@view');
 $router->add( '/web-application/test/{id}', 'TestController@view');
 $router->add( '/web-application/testing/{name}', 'TestController@name');
+
+$router->add( '/google', function() {
+	header('Location: http://www.google.com' );
+	die();
+});
+
+$router->add( '/text', function() {
+	echo "Text";
+});

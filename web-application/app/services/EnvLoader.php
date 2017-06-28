@@ -21,10 +21,12 @@ class EnvLoader {
 			
 			$envFile = file( ".env" );
 			
-			foreach ( $envFile as $en ) {
+			foreach ( $envFile as $env ) {
 				
-				$expl = explode( '=', $en );
+				$expl = explode( '=', $env );
 				$this->envVariables[trim($expl[0])] = trim($expl[1]);
+				
+				define(trim($expl[0]), trim($expl[1]) );
 				
 			}
 			

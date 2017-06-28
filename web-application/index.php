@@ -23,15 +23,15 @@ use \app\ServiceLoader;
 use \app\services\Database;
 use \app\services\Router;
 use \app\services\Message;
-use \app\services\Authenticate;
+use \app\services\EnvLoader;
 
 new Autoloader();
+new EnvLoader();
 
 $load = new ServiceLoader();
 
 $load->set( 'Database', new Database(), true );
 $load->set( 'Message', new Message(), true );
-$load->set( 'Authenticate', new Authenticate(), true );
 
 $router = new Router( $load );
 

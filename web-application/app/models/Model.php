@@ -10,22 +10,19 @@
 namespace app\models;
 
 use app\ServiceLoader;
-use app\services\Authenticate;
-use app\services\Database;
+use app\services\Database AS DB;
 use app\services\libraries\MessageType;
 use app\services\Message;
 use \PDO;
 
 class Model {
 	
-	/** @var  PDO */
+	/** @var  DB */
 	protected $db;
 	/** @var ServiceLoader */
 	protected $loader;
 	/** @var Message */
 	public $message;
-	/** @var Authenticate */
-	public $auth;
 	
 	const TABLENAME = "";
 	
@@ -34,11 +31,10 @@ class Model {
 	 *
 	 * @param ServiceLoader $load
 	 */
-	function __construct ( ServiceLoader $load ) {
+	function __construct( ServiceLoader $load ) {
 		
-		$this->db      = $load->get( 'Database' )->db;
+		$this->db      = $load->get( 'Database' );
 		$this->message = $load->get( 'Message' );
-		$this->auth    = $load->get( 'Authenticate' );
 		$this->loader  = $load;
 		
 	}
@@ -46,14 +42,11 @@ class Model {
 	/**
 	 * @return array|mixed
 	 */
-	public function fetchAll () {
+	public function fetchAll() {
 		
-		$sql       = "SELECT * FROM `" . $this::TABLENAME . "`";
-		$statement = $this->db->prepare( $sql );
+		$this->db->query( "SELECT * FROM `" . $this::TABLENAME . "`" );
 		
-		$result = $statement->execute();
-		
-		return $this->returnData( $statement, $result );
+		return $this->db->fetchAll();
 		
 	}
 	
@@ -62,36 +55,31 @@ class Model {
 	 *
 	 * @return array|mixed
 	 */
-	public function fetchSingle ( $id ) {
+	public function fetchSingle( $id ) {
 		
-		$sql       = "SELECT * FROM `" . $this::TABLENAME . "` WHERE `id` = :id";
-		$statement = $this->db->prepare( $sql );
-		$statement->bindValue( ":id", $id, PDO::PARAM_INT );
+		$this->db->query( "SELECT * FROM `" . $this::TABLENAME . "` WHERE `id` = :id" );
+		$this->db->bind( ":id", $id );
 		
-		$result = $statement->execute();
-		
-		return $this->returnData( $statement, $result );
+		return $this->db->single();
 		
 	}
 	
 	/**
 	 * @param $id
 	 */
-	public function delete ( $id ) {
+	public function delete( $id ) {
 		
-		$sql       = "SELECT * FROM `" . $this::TABLENAME . "` WHERE `id` = :id";
-		$statement = $this->db->prepare( $sql );
+		$this->db->query( "SELECT * FROM `" . $this::TABLENAME . "` WHERE `id` = :id" );
+		$this->db->bind( ":id", $id );
 		
-		$statement->bindValue( ":id", $id, PDO::PARAM_INT );
-		$result = $statement->execute();
+		$this->db->execute();
 		
-		if ( $statement->rowCount() > 0 ) {
+		if ( $this->db->countRows() > 0 ) {
 			
-			$sql       = "DELETE FROM `" . $this::TABLENAME . "` WHERE `id` = :id";
-			$statement = $this->db->prepare( $sql );
+			$this->db->query( "DELETE FROM `" . $this::TABLENAME . "` WHERE `id` = :id" );
 			
-			$statement->bindValue( ":id", $id, PDO::PARAM_INT );
-			$result = $statement->execute();
+			$this->db->bind(":id", $id );
+			$result = $this->db->execute();
 			
 			if ( $result ) {
 				$this->message->createMessage( MessageType::Success, "Data succesvol verwijdert" );
@@ -108,41 +96,23 @@ class Model {
 	}
 	
 	/**
-	 * @param \PDOStatement $statement
-	 * @param               $result
-	 * @param bool          $single
-	 *
-	 * @return array|mixed
-	 */
-	private function returnData ( \PDOStatement $statement, $result, $single = false ) {
-		
-		$data = [];
-		
-		if ( $result ) {
-			if ( $single ) {
-				$data = $statement->fetch( PDO::FETCH_ASSOC );
-			}
-			else {
-				$data = $statement->fetchAll( PDO::FETCH_ASSOC );
-			}
-		}
-		
-		return $data;
-		
-	}
-	
-	/**
 	 * @param $sql
 	 *
 	 * @return bool|mixed
 	 */
-	public function executeSafeQuery ( $sql ) {
+	public function executeSafeQuery( $query, $single = false ) {
 		
-		$statement = $this->db->prepare( $sql );
-		$result    = $statement->execute();
+		$result = $this->db->query( $query );
 		
 		if ( $result ) {
-			return $statement->fetch( PDO::FETCH_ASSOC );
+			switch ( $single ) {
+				case true:
+					return $this->db->single();
+					break;
+				default:
+					return $this->db->all();
+					break;
+			}
 		}
 		else {
 			$this->message->createDatabaseError();

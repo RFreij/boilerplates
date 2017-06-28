@@ -11,4 +11,3 @@ The global template file and view files both always have the next variables:
 * ***$data*** { $data should be available when passed through a controller, this can be for example database records.
 * ***$title*** { Holds the page title that will be put between the HTML title tags, should be set in the controller > default value is empty }
 * ***$description*** { Holds the page description for the meta description tag > should be set in the controller > default value is empty}
-Hoe z
