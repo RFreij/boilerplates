@@ -10,22 +10,18 @@
 namespace app\models;
 
 use app\ServiceLoader;
-use app\services\Authenticate;
 use app\services\Database;
 use app\services\libraries\MessageType;
 use app\services\Message;
-use \PDO;
 
 class Model {
 	
-	/** @var  PDO */
+	/** @var  Database */
 	protected $db;
 	/** @var ServiceLoader */
 	protected $loader;
 	/** @var Message */
 	public $message;
-	/** @var Authenticate */
-	public $auth;
 	
 	const TABLENAME = "";
 	
@@ -34,11 +30,10 @@ class Model {
 	 *
 	 * @param ServiceLoader $load
 	 */
-	function __construct ( ServiceLoader $load ) {
+	function __construct( ServiceLoader $load ) {
 		
-		$this->db      = $load->get( 'Database' )->db;
+		$this->db      = $load->get( 'Database' );
 		$this->message = $load->get( 'Message' );
-		$this->auth    = $load->get( 'Authenticate' );
 		$this->loader  = $load;
 		
 	}
@@ -46,14 +41,16 @@ class Model {
 	/**
 	 * @return array|mixed
 	 */
-	public function fetchAll () {
+	public function fetchAll() {
 		
-		$sql       = "SELECT * FROM `" . $this::TABLENAME . "`";
-		$statement = $this->db->prepare( $sql );
+		Database::table( $this::TABLENAME )
+			->select( [
+					"*"
+			] )
+			->execute();
+
 		
-		$result = $statement->execute();
-		
-		return $this->returnData( $statement, $result );
+		return Database::all();
 		
 	}
 	
@@ -62,72 +59,43 @@ class Model {
 	 *
 	 * @return array|mixed
 	 */
-	public function fetchSingle ( $id ) {
+	public function fetchSingle( $id ) {
 		
-		$sql       = "SELECT * FROM `" . $this::TABLENAME . "` WHERE `id` = :id";
-		$statement = $this->db->prepare( $sql );
-		$statement->bindValue( ":id", $id, PDO::PARAM_INT );
+		Database::table( $this::TABLENAME )
+			->select([
+					"*"
+			])
+			->where( "id", ":id" )
+			->addPlaceholder([
+					":id"
+			])
+			->addValue( [
+					$id
+			])
+			->execute();
 		
-		$result = $statement->execute();
-		
-		return $this->returnData( $statement, $result );
+		return Database::single();
 		
 	}
 	
 	/**
 	 * @param $id
 	 */
-	public function delete ( $id ) {
+	public function delete( $id ) {
 		
-		$sql       = "SELECT * FROM `" . $this::TABLENAME . "` WHERE `id` = :id";
-		$statement = $this->db->prepare( $sql );
-		
-		$statement->bindValue( ":id", $id, PDO::PARAM_INT );
-		$result = $statement->execute();
-		
-		if ( $statement->rowCount() > 0 ) {
+		Database::table( $this::TABLENAME )
+			->delete()
+			->addColumn( "id" )
+			->addPlaceholder( ":id" )
+			->addValue( $id )
+			->execute();
 			
-			$sql       = "DELETE FROM `" . $this::TABLENAME . "` WHERE `id` = :id";
-			$statement = $this->db->prepare( $sql );
-			
-			$statement->bindValue( ":id", $id, PDO::PARAM_INT );
-			$result = $statement->execute();
-			
-			if ( $result ) {
-				$this->message->createMessage( MessageType::Success, "Data succesvol verwijdert" );
-			}
-			else {
-				$this->message->createMessage( MessageType::Error, "Er is iets mis gegaan bij het bijwerken van de database tijdens het verwijderen. " );
-			}
-			
+		if ( Database::affectedRows() > 0 ) {
+			$this->message->createMessage( MessageType::Success, "Data succesvol verwijdert" );
 		}
 		else {
-			$this->message->createMessage( MessageType::Notification, "Er zijn geen gegevens gevonden met het opgegeven ID" );
+			$this->message->createMessage( MessageType::Error, "Er is geen waarde verwijdert, mogelijk is er wat verkeerd gegaan in de database of bestaat het opgegeven ID niet." );
 		}
-		
-	}
-	
-	/**
-	 * @param \PDOStatement $statement
-	 * @param               $result
-	 * @param bool          $single
-	 *
-	 * @return array|mixed
-	 */
-	private function returnData ( \PDOStatement $statement, $result, $single = false ) {
-		
-		$data = [];
-		
-		if ( $result ) {
-			if ( $single ) {
-				$data = $statement->fetch( PDO::FETCH_ASSOC );
-			}
-			else {
-				$data = $statement->fetchAll( PDO::FETCH_ASSOC );
-			}
-		}
-		
-		return $data;
 		
 	}
 	
@@ -136,13 +104,19 @@ class Model {
 	 *
 	 * @return bool|mixed
 	 */
-	public function executeSafeQuery ( $sql ) {
+	public function executeSafeQuery( $query, $single = false ) {
 		
-		$statement = $this->db->prepare( $sql );
-		$result    = $statement->execute();
+		$result = $this->db->query( $query );
 		
 		if ( $result ) {
-			return $statement->fetch( PDO::FETCH_ASSOC );
+			switch ( $single ) {
+				case true:
+					return $this->db->single();
+					break;
+				default:
+					return $this->db->all();
+					break;
+			}
 		}
 		else {
 			$this->message->createDatabaseError();
