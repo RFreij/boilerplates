@@ -10,14 +10,13 @@
 namespace app\models;
 
 use app\ServiceLoader;
-use app\services\Database AS DB;
+use app\services\Database;
 use app\services\libraries\MessageType;
 use app\services\Message;
-use \PDO;
 
 class Model {
 	
-	/** @var  DB */
+	/** @var  Database */
 	protected $db;
 	/** @var ServiceLoader */
 	protected $loader;
@@ -44,9 +43,14 @@ class Model {
 	 */
 	public function fetchAll() {
 		
-		$this->db->query( "SELECT * FROM `" . $this::TABLENAME . "`" );
+		Database::table( $this::TABLENAME )
+			->select( [
+					"*"
+			] )
+			->execute();
+
 		
-		return $this->db->fetchAll();
+		return Database::all();
 		
 	}
 	
@@ -57,10 +61,20 @@ class Model {
 	 */
 	public function fetchSingle( $id ) {
 		
-		$this->db->query( "SELECT * FROM `" . $this::TABLENAME . "` WHERE `id` = :id" );
-		$this->db->bind( ":id", $id );
+		Database::table( $this::TABLENAME )
+			->select([
+					"*"
+			])
+			->where( "id", ":id" )
+			->addPlaceholder([
+					":id"
+			])
+			->addValue( [
+					$id
+			])
+			->execute();
 		
-		return $this->db->single();
+		return Database::single();
 		
 	}
 	
@@ -69,28 +83,18 @@ class Model {
 	 */
 	public function delete( $id ) {
 		
-		$this->db->query( "SELECT * FROM `" . $this::TABLENAME . "` WHERE `id` = :id" );
-		$this->db->bind( ":id", $id );
-		
-		$this->db->execute();
-		
-		if ( $this->db->countRows() > 0 ) {
+		Database::table( $this::TABLENAME )
+			->delete()
+			->addColumn( "id" )
+			->addPlaceholder( ":id" )
+			->addValue( $id )
+			->execute();
 			
-			$this->db->query( "DELETE FROM `" . $this::TABLENAME . "` WHERE `id` = :id" );
-			
-			$this->db->bind(":id", $id );
-			$result = $this->db->execute();
-			
-			if ( $result ) {
-				$this->message->createMessage( MessageType::Success, "Data succesvol verwijdert" );
-			}
-			else {
-				$this->message->createMessage( MessageType::Error, "Er is iets mis gegaan bij het bijwerken van de database tijdens het verwijderen. " );
-			}
-			
+		if ( Database::affectedRows() > 0 ) {
+			$this->message->createMessage( MessageType::Success, "Data succesvol verwijdert" );
 		}
 		else {
-			$this->message->createMessage( MessageType::Notification, "Er zijn geen gegevens gevonden met het opgegeven ID" );
+			$this->message->createMessage( MessageType::Error, "Er is geen waarde verwijdert, mogelijk is er wat verkeerd gegaan in de database of bestaat het opgegeven ID niet." );
 		}
 		
 	}

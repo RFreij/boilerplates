@@ -51,20 +51,20 @@ class Controller {
 	 * @param       $view
 	 * @param array $data
 	 */
-	public function render ( $view, $data = [] ) {
+	public function render ( $view, $stack = [] ) {
 		
 		$view = str_replace( '.', '/', $view );
 		$view = 'public/views/' . $view . '.php';
 		
 		if ( file_exists( $view ) ) {
 			
-			$data[ 'messages' ][ 'errors' ]        = $this->model->message->getErrors();
-			$data[ 'messages' ][ 'notifications' ] = $this->model->message->getNotifications();
-			$data[ 'messages' ][ 'success' ]       = $this->model->message->getSuccess();
-			$stack[ 'auth' ]                       = $this->model->auth;
-			$stack[ 'user' ]                       = ( isset( $_SESSION[ 'user' ] ) ) ? $_SESSION[ 'user' ] : null;
+			$stack[ 'messages' ][ 'errors' ]        = $this->model->message->getErrors();
+			$stack[ 'messages' ][ 'notifications' ] = $this->model->message->getNotifications();
+			$stack[ 'messages' ][ 'success' ]       = $this->model->message->getSuccess();
+			$stack[ 'title' ]                       = ( isset( $stack[ 'title' ] ) ) ? $stack[ 'title' ] : "";
+			$stack[ 'description' ]                 = ( isset( $stack[ 'description' ] ) ) ? $stack[ 'description' ] : "";
 			
-			extract( $data );
+			extract( $stack );
 			
 			$this->model->message->clear();
 			

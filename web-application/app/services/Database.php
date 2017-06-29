@@ -13,7 +13,7 @@ namespace app\services;
 use app\services\querybuilder\QueryBuilder;
 use \PDO;
 
-class Database {
+final class Database {
 	
 	private $host = DB_HOST;
 	private $user = DB_USERNAME;
@@ -22,10 +22,13 @@ class Database {
 	private $driver = DB_CONNECTION;
 	private $port = DB_PORT;
 	
-	private $dbh;
+	private static $dbh;
 	/** @var  \PDOStatement */
-	private $stmt;
+	private static $stmt;
 	
+	/**
+	 * Database constructor.
+	 */
 	function __construct() {
 		
 		$dsn     = $this->driver . ":host=" . $this->host . ";port= " . $this->port . ";dbname=" . $this->dbName;
@@ -35,7 +38,7 @@ class Database {
 		];
 		
 		try {
-			$this->dbh = new PDO( $dsn, $this->user, $this->pass, $options );
+			$this::$dbh = new PDO( $dsn, $this->user, $this->pass, $options );
 		}
 		catch ( \PDOException $e ) {
 			$message = new Message();
@@ -44,12 +47,20 @@ class Database {
 		
 	}
 	
-	public function query( $query ) {
+	/**
+	 * @param $query
+	 */
+	public static function query( $query ) {
 		
-		$this->stmt = $this->dbh->prepare( $query );
+		self::$stmt = self::$dbh->prepare( $query );
 	}
 	
-	public function bind( $param, $value, $type = null ) {
+	/**
+	 * @param      $param
+	 * @param      $value
+	 * @param null $type
+	 */
+	public static function bind( $param, $value, $type = null ) {
 		
 		if ( is_null( $type ) ) {
 			switch ( true ) {
@@ -67,33 +78,69 @@ class Database {
 					break;
 			}
 		}
-		$this->stmt->bindValue( $param, $value, $type );
+		self::$stmt->bindValue( $param, $value, $type );
 	}
 	
-	public function all() {
+	/**
+	 * @return array
+	 * Return all records from query
+	 */
+	public static function all() {
 		
-		$this->execute();
-		return $this->stmt->fetchAll( PDO::FETCH_ASSOC );
+		self::execute();
+		return self::$stmt->fetchAll( PDO::FETCH_ASSOC );
 	}
 	
-	public function execute() {
+	/**
+	 * @return mixed
+	 * Return a single row
+	 */
+	public static function single() {
+		self::execute();
+		return self::$stmt->fetch( PDO::FETCH_ASSOC );
+	}
+	
+	/**
+	 * @return bool
+	 * Execute query, if an error is present create a message
+	 */
+	public static function execute() {
 		
-		return $this->stmt->execute();
+		try {
+			return self::$stmt->execute();
+		}
+		catch ( \PDOException $e ) {
+			var_dump( $e );
+			echo "<br />";
+			self::$stmt->debugDumpParams();
+			echo "<br />";
+			Message::createDatabaseError();
+			return false;
+		}
+		
 	}
 	
-	public function single() {
-		$this->execute();
-		return $this->stmt->fetch( PDO::FETCH_ASSOC );
+	/**
+	 * @return int
+	 * Count affected rows
+	 */
+	public static function affectedRows() {
+		return self::$stmt->rowCount();
 	}
 	
-	public function countRows() {
-		return $this->stmt->rowCount();
+	/**
+	 * @return int
+	 * Get last id
+	 */
+	public static function lastId() {
+		return (int) self::$dbh->lastInsertId();
 	}
 	
-	public function lastId() {
-		return $this->dbh->lastInsertId();
-	}
-	
+	/**
+	 * @param $tablename
+	 * Start up QueryBuilder to create querys
+	 * @return QueryBuilder
+	 */
 	public static function table( $tablename ) {
 		return new QueryBuilder( $tablename );
 	}
