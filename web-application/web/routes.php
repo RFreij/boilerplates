@@ -6,5 +6,5 @@
  * Date: 22-5-2017
  * Time: 09:20
  */
-
-$router->add( '/web-application/', 'NoteController@index');
+//Example
+$router->add( '/web-application/', 'Webapplication@index');

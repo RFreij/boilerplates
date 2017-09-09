@@ -15,9 +15,14 @@ class Autoloader {
 	function __construct () {
 		
 		spl_autoload_register( function ( $file ) {
-			if ( ! class_exists( $file ) ) {
-				$file = str_replace( "\\", "/", $file );
-				include $file . '.php';
+
+			$file = $file . ".php";
+			if ( !class_exists( $file ) ) {
+				
+				if ( file_exists( $file ) ) {
+					$file = str_replace( "\\", "/", $file );
+					include $file;
+				}
 			}
 		} );
 		

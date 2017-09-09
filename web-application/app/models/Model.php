@@ -99,31 +99,4 @@ class Model {
 		
 	}
 	
-	/**
-	 * @param $sql
-	 *
-	 * @return bool|mixed
-	 */
-	public function executeSafeQuery( $query, $single = false ) {
-		
-		$result = $this->db->query( $query );
-		
-		if ( $result ) {
-			switch ( $single ) {
-				case true:
-					return $this->db->single();
-					break;
-				default:
-					return $this->db->all();
-					break;
-			}
-		}
-		else {
-			$this->message->createDatabaseError();
-		}
-		
-		return false;
-		
-	}
-	
 }
