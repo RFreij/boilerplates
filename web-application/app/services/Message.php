@@ -22,7 +22,7 @@ final class Message {
 		 */
 		if ( ! empty( $_SESSION[ 'messages' ] ) ) {
 			print_r($_SESSION['messages'] );
-			$this->messages = $_SESSION[ 'messages' ];
+			self::$messages = $_SESSION[ 'messages' ];
 		}
 		
 	}
@@ -59,20 +59,20 @@ final class Message {
 	/**
 	 * @return array
 	 */
-	public function getMessages () {
+	public static function getMessages () {
 		
-		return $this::$messages;
+		return self::$messages;
 		
 	}
 	
 	/**
 	 * @return array
 	 */
-	public function getErrors () {
+	public static function getErrors () {
 		
 		$errors = [];
 		
-		foreach ( $this::$messages as $message ) {
+		foreach ( self::$messages as $message ) {
 			
 			if ( $message[ 'type' ] == MessageType::Error ) {
 				$errors[] = $message[ 'message' ];
@@ -87,11 +87,11 @@ final class Message {
 	/**
 	 * @return array
 	 */
-	public function getSuccess () {
+	public static function getSuccess () {
 		
 		$success = [];
 		
-		foreach ( $this::$messages as $message ) {
+		foreach ( self::$messages as $message ) {
 			
 			if ( $message[ 'type' ] == MessageType::Success ) {
 				$success[] = $message[ 'message' ];
@@ -106,11 +106,11 @@ final class Message {
 	/**
 	 * @return array
 	 */
-	public function getNotifications () {
+	public static function getNotifications () {
 		
 		$notifications = [];
 		
-		foreach ( $this::$messages as $message ) {
+		foreach ( self::$messages as $message ) {
 			
 			if ( $message[ 'type' ] == MessageType::Notification ) {
 				$notifications[] = $message[ 'message' ];
@@ -122,7 +122,7 @@ final class Message {
 		
 	}
 	
-	public function clear () {
+	public static function clear () {
 		
 		unset( $_SESSION[ 'messages' ] );
 		

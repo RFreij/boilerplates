@@ -7,4 +7,10 @@
  * Time: 09:20
  */
 //Example
-$router->add( '/web-application/', 'Webapplication@index');
+$router->get( '/web-application/', 'AppController');
+$router->get( '/web-application/{id}', 'AppController@show');
+$router->get( '/web-application/edit/{id}', 'AppController@edit');
+$router->get('/web-application/create', 'AppController@create');
+$router->post( '/web-application/', 'AppController');
+$router->put( '/web-application/', 'AppController');
+$router->delete('/web-application/{id}', 'AppController');

@@ -9,59 +9,46 @@
 
 namespace app\models;
 
-use app\ServiceLoader;
 use app\services\Database;
 use app\services\libraries\MessageType;
 use app\services\Message;
+use app\services\support\Str;
 
-class Model {
+abstract class Model {
+ 
+	protected $table;
 	
-	/** @var  Database */
-	protected $db;
-	/** @var ServiceLoader */
-	protected $loader;
-	/** @var Message */
-	public $message;
-	
-	const TABLENAME = "";
-	
-	/**
-	 * Model constructor.
-	 *
-	 * @param ServiceLoader $load
-	 */
-	function __construct( ServiceLoader $load ) {
-		
-		$this->db      = $load->get( 'Database' );
-		$this->message = $load->get( 'Message' );
-		$this->loader  = $load;
-		
+	public function __construct() {
+        $this->table = ( $this->table != "" ) ? $this->table : Str::snake( (new \ReflectionClass($this))->getShortName() );
 	}
-	
-	/**
-	 * @return array|mixed
-	 */
-	public function fetchAll() {
-		
-		Database::table( $this::TABLENAME )
-			->select( [
-					"*"
-			] )
-			->execute();
-
-		
-		return Database::all();
-		
-	}
+    
+    private function getAll( ) {
+        
+        $query = Database::table( $this->table )
+                ->select( [
+                        "*"
+                ] )
+                ->toString();
+        
+        return $query;
+    }
+    
+    public static function all() {
+        
+        $instance = new static;
+        
+        return $instance->getAll( );
+        
+    }
 	
 	/**
 	 * @param $id
 	 *
 	 * @return array|mixed
 	 */
-	public function fetchSingle( $id ) {
+	public static function single( $id ) {
 		
-		Database::table( $this::TABLENAME )
+		Database::table( self::$table )
 			->select([
 					"*"
 			])
@@ -81,9 +68,9 @@ class Model {
 	/**
 	 * @param $id
 	 */
-	public function delete( $id ) {
+	public static function delete( $id ) {
 		
-		Database::table( $this::TABLENAME )
+		Database::table( self::$table )
 			->delete()
 			->addColumn( "id" )
 			->addPlaceholder( ":id" )
@@ -91,10 +78,10 @@ class Model {
 			->execute();
 			
 		if ( Database::affectedRows() > 0 ) {
-			$this->message->createMessage( MessageType::Success, "Data succesvol verwijdert" );
+			Message::createMessage( MessageType::Success, "Data succesvol verwijdert" );
 		}
 		else {
-			$this->message->createMessage( MessageType::Error, "Er is geen waarde verwijdert, mogelijk is er wat verkeerd gegaan in de database of bestaat het opgegeven ID niet." );
+			Message::createMessage( MessageType::Error, "Er is geen waarde verwijdert, mogelijk is er wat verkeerd gegaan in de database of bestaat het opgegeven ID niet." );
 		}
 		
 	}

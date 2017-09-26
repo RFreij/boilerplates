@@ -30,12 +30,7 @@ use \app\services\EnvLoader;
 new Autoloader();
 new EnvLoader();
 
-$load = new ServiceLoader();
-
-$load->set( 'Database', new Database(), true );
-$load->set( 'Message', new Message(), true );
-
-$router = new Router( $load );
+$router = new Router();
 
 require('web/routes.php');
 

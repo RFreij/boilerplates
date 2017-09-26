@@ -9,31 +9,11 @@
 
 namespace app\controllers;
 
-use app\models\Model;
-use app\ServiceLoader;
 use app\services\libraries\ResponseType;
+use app\services\Message;
+use app\services\Template;
 
-class Controller {
-    
-    const MODEL = "Model";
-    
-    /** @var Model */
-    protected $model;
-    
-    /**
-     * Controller constructor.
-     *
-     * @param ServiceLoader $loader
-     */
-    public function __construct($loader) {
-        
-        $model = 'app\\models\\' . $this::MODEL;
-        
-        if (class_exists($model)) {
-            $this->model = new $model($loader);
-        }
-        
-    }
+abstract class Controller {
     
     /**
      * @return bool
@@ -52,27 +32,22 @@ class Controller {
         $view = str_replace('.', '/', $view);
         $view = 'public/views/' . $view . '.php';
         
-        if (file_exists($view)) {
-            
-            $stack[ 'messages' ][ 'errors' ]        = $this->model->message->getErrors();
-            $stack[ 'messages' ][ 'notifications' ] = $this->model->message->getNotifications();
-            $stack[ 'messages' ][ 'success' ]       = $this->model->message->getSuccess();
-            $stack[ 'title' ]                       = (isset($stack[ 'title' ])) ? $stack[ 'title' ] : "";
-            $stack[ 'description' ]                 = (isset($stack[ 'description' ])) ? $stack[ 'description' ] : "";
-            
-            extract($stack);
-            
-            $this->model->message->clear();
-            
-            if (isset($data[ 'title' ])) {
-                unset ($data[ 'title' ]);
-            }
-            
-            include_once('public/template/index.php');
-            
-        } else {
-            echo "View file not found";
+        $stack[ 'messages' ][ 'errors' ]        = Message::getErrors();
+        $stack[ 'messages' ][ 'notifications' ] = Message::getNotifications();
+        $stack[ 'messages' ][ 'success' ]       = Message::getSuccess();
+        $stack[ 'title' ]                       = (isset($stack[ 'title' ])) ? $stack[ 'title' ] : "";
+        $stack[ 'description' ]                 = (isset($stack[ 'description' ])) ? $stack[ 'description' ] : "";
+        
+        extract($stack);
+        
+        Message::clear();
+        
+        if (isset($data[ 'title' ])) {
+            unset ($data[ 'title' ]);
         }
+        
+        $template = new Template();
+        $template->render( $view );
         
     }
     
@@ -83,7 +58,7 @@ class Controller {
      *
      * @return void
      */
-    public function response($data, $status = 200, $type = ResponseType::JSON) {
+    public function response($data, $type = ResponseType::JSON, $status = 200) {
         
         if (is_string($data)) {
             $data = ['msg' => $data];
