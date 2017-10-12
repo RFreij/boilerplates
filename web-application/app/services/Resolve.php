@@ -12,18 +12,19 @@ namespace app\services;
 class Resolve {
     
     /**
-     * @param $class
+     * @param       $class
+     * @param null  $method
+     * @param array $params
      *
-     * @return object
-     * @throws \Exception
+     * @return mixed|object
      */
-    public function resolve($class)
+    public function resolve($class, $method = null, $params = [])
     {
+        
+        //Resolve model
         $reflector = new \ReflectionClass($class);
         
-        if( !$reflector->isInstantiable() ) {
-            throw new \Exception("[$class] is not instantiable" );
-        }
+        $this->isInstantiable( $reflector );
         
         $constructor = $reflector->getConstructor();
         
@@ -31,10 +32,36 @@ class Resolve {
             return new $class;
         }
         
-        $parameters = $constructor->getParameters();
-        $dependencies = $this->getDependencies( $parameters );
+        $classParameters = $constructor->getParameters();
+        $dependencies = $this->getDependencies( $classParameters );
+        $class = $reflector->newInstanceArgs( $dependencies );
         
-        return $reflector->newInstanceArgs( $dependencies );
+        if( $method != null ) {
+            
+            $method = $reflector->getMethod( $method );
+            $methodParameters = $method->getParameters();
+            $methodDependencies = $this->getDependencies( $methodParameters );
+            
+            //Insert static parameters
+            if( !empty( $params ) ) {
+                $methodDependencies[] = $params;
+            }
+            
+            return $method->invokeArgs( $class, $methodDependencies );
+            
+        }
+        
+        return $class;
+        
+    }
+    
+    /**
+     * @param \ReflectionClass $reflector
+     *
+     * @return bool|\Exception
+     */
+    public function isInstantiable( \ReflectionClass $reflector ) {
+        return ( $reflector->isInstantiable() ) ? true : new \Exception('[' . $reflector->getName() . '] is not instantiable' );
     }
     
     /**
@@ -50,29 +77,12 @@ class Resolve {
         {
             $dependency = $parameter->getClass();
             
-            if( is_null( $dependency ) ) {
-                $dependencies[] = $this->resolveNonClass( $parameter );
-            } else {
+            if( !is_null( $dependency ) ) {
                 $dependencies[] = $this->resolve( $dependency->name );
             }
         }
         
         return $dependencies;
-    }
-    
-    /**
-     * @param \ReflectionParameter $parameter
-     *
-     * @return mixed
-     * @throws \Exception
-     */
-    public function resolveNonClass( \ReflectionParameter $parameter )
-    {
-        if( $parameter->isDefaultValueAvailable() ) {
-            return $parameter->getDefaultValue();
-        }
-        
-        throw new \Exception("Cannot resolve unknown" );
     }
     
 }

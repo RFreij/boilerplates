@@ -12,7 +12,7 @@ namespace app\services;
 class Template {
     
     private $template;
-    private $parsed_template;
+    private $data;
     
     public function render( $view ) {
         
@@ -24,6 +24,16 @@ class Template {
     
     }
     
+    private function load( $template ) {
     
+    }
+    
+    private function parse( $template ) {
+    
+    }
+    
+    static function replace( ) {
+    
+    }
     
 }

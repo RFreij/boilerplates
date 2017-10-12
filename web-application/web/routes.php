@@ -14,3 +14,5 @@ $router->get('/web-application/create', 'AppController@create');
 $router->post( '/web-application/', 'AppController');
 $router->put( '/web-application/', 'AppController');
 $router->delete('/web-application/{id}', 'AppController');
+
+$router->get('/web-application/', 'AppController');

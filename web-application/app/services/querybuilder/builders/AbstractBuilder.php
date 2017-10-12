@@ -31,7 +31,7 @@ abstract class AbstractBuilder implements BuilderInterface {
 	protected $limit;
 	
 	/**
-	 * @param array $columns
+	 * @param mixed $columns
 	 * Add needed columns
 	 *
 	 * @return $this
@@ -44,7 +44,7 @@ abstract class AbstractBuilder implements BuilderInterface {
 	}
 	
 	/**
-	 * @param array $placeholders
+	 * @param mixed $placeholders
 	 * Add all placeholders
 	 *
 	 * @return $this

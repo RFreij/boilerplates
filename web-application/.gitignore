@@ -1,1 +1,4 @@
 .env
+app/controllers/FallbackController.php
+app/controllers/AppController.php
+app/models/FallBack.php

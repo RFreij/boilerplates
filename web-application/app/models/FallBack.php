@@ -9,8 +9,6 @@
 
 namespace app\models;
 
-use app\services\Database;
-use app\services\Message;
 
 class FallBack extends model {
 

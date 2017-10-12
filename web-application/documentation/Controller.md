@@ -3,7 +3,9 @@ De controller regelt al het verkeer tussen de controller->model en controller->v
 
 Standaard methode voor de controller is als volgt:
 * void **render**( string, array )
+* JSON, XML or HTML **response**( "data" array, ResponseType, "status" int )
 
+### Method render
 Hierbij is de string een pad naar de view bestand, mappen en bestanden worden gescheiden door een **.**
 Render haalt alle beschikbare data bij elkaar en stuurt deze op naar het view bestand. Data wat altijd word meegegeven zijn:
 * errors
@@ -15,3 +17,7 @@ Render haalt alle beschikbare data bij elkaar en stuurt deze op naar het view be
 Alle data is gebundeld in een $stack variabele, maar is ook aan te roepen door middel van $keyNaam array. 
 
 **$stack[ 'data' ]** is dus aan te roepen als **$data**
+
+### Method response
+Echo't standaard een JSON string, kan aangepast worden naar XML of HTML/text.
+standaard status code is 200, kan daarentegen ook aangepast worden.

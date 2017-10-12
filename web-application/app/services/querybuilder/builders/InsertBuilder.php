@@ -9,8 +9,6 @@
 
 namespace app\services\querybuilder\builders;
 
-use app\services\Database;
-
 class InsertBuilder extends AbstractBuilder {
 	
 	public function __construct( $tablename ) {

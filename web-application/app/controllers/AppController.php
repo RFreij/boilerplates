@@ -9,7 +9,12 @@
 
 namespace app\controllers;
 
+use app\models\App;
+
 class AppController {
+    
+    function __construct() {
+    }
     
     public function index() {
         echo "index";
@@ -18,6 +23,9 @@ class AppController {
         <input type="hidden" name="_method" value="DELETE"/>
         <input type="submit" value="submit" />
         </form>';
+        
+        $app = new App();
+        echo $app->getTableName();
     }
     
     public function show($id) {
